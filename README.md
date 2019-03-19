@@ -1,1 +1,19 @@
 # document-label-classifier
+
+We have a dataset of 2708 textual documents (i.e. academic papers), as well as the citation relation between them. We can therefore organize the documents as a network in which each node represents a document, and the directed edge between node u_i and node u_j occurs when the paper u_i cites u_j. Each document is labeled with one of the seven possible classes (i.e. publication venues), denoted as 1, 2, ..., 7. We also have the labels of 2167 documents in the train set.
+
+I predicted the labels of the 543 documents in the test set, taking into account both the textual content of documents, as well as the structure of the network.
+
+The network structure is classified as a graph where each ‘node’ is represented by the document_id and its associated textual information (the words in the abstract). Each edge in this graph depicts the citation relations between the nodes. I used node2vec to incorporate the network’s structural features for the classification tasks. Intuitively, one can conceive of node2vec as building on top of the same ‘principle’ that word2vec employs. 
+
+This works for the task of classification since each ‘node’ is surrounded by a ‘context’ of similar research papers, bound together by the citation links between them. As mentioned by Grover and Leskovec (2016), node2vec learns a mapping of the nodes in the form of a ‘low dimensional space of features’ such that it preserves the ‘network neighbourhood’ of nodes. It does this by utilizing biased random walks/exploration of the neighbourhood of a node that is a combination of Depth-first and Breadth-first strategies. They define two important structural relations between nodes in a network/graph that can represent important information when it comes to downstream learning tasks such as classification. One of these is ‘homophily’ (organization of nodes based on the communities to which they belong), and ‘structural equivalence’ (based on the similarities of structural roles of certain nodes within their communities). Much like the reasoning for words and the ‘distributional hypothesis’, vectors with similar ‘labels’ would occupy similar regions within the vector space. Thus, I created an embeddings matrix with the indices represented the ‘nodes’ and each node represented by the node2vec dense vector.
+
+I used word2vec to generate feature vectors that represented the ‘contexts’ in which each word appeared in the abstracts of the documents. Therefore, each ‘node’ now points to a matrix consisting on m words in the sentence/abstract, where each word is represented by an R_d dimensional real vector. In order to keep the dimensionality of these vectors under control, I then took the average of these vectors and represented them as a ‘meta’ vector to preserve some notion of the information that they contained about the contexts of the textual data. 
+
+Since our network consists of both link/citation/structural information and information about the words themselves, getting a better prediction meant combining both facets. Doing so indeed helped improve the accuracy of the predictions in my network. I did this by following the simple approach taken by Jana and Goyal (2018), where they use the vector concatenation. After this operation, my embeddings matrix contained both network/structural and textual information in the form of dense vectors. I used this to train a network that had a softmax activation function in the output layer so that I could get predictions about the different classes.
+
+NOTE: The code uploaded here is taken from a Jupyter Notebook, which would explain why the imports don't all appear at the top of the file.
+
+Jana, Abhik and Goyal, Pawan. ‘Can Network Embedding of Distributional Thesaurus be Combined with Word Vectors for Better Representation?’ 2018.
+
+Aditya Grover, Jure Leskovec. 'node2vec: Scalable Feature Learning for Networks.'2016.
